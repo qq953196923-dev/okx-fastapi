@@ -3,15 +3,15 @@
   "info": { "title": "okx-fastapi", "version": "1.0.0" },
   "servers": [{ "url": "https://okx-fastapi.onrender.com" }],
   "paths": {
-    "/health": { "get": { "summary": "Health check", "operationId": "health", "responses": {"200": {"description": "OK"}}}},
+    "/health": { "get": { "summary": "Health check", "operationId": "health", "responses": { "200": { "description": "OK" } } } },
     "/ticker": {
       "get": {
         "summary": "Get single ticker",
         "operationId": "getTicker",
         "parameters": [
-          {"name": "inst_id", "in": "query", "required": true, "schema": {"type": "string"}}
+          { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } }
         ],
-        "responses": {"200": {"description": "OK"}}
+        "responses": { "200": { "description": "OK" } }
       }
     },
     "/tickers": {
@@ -19,9 +19,9 @@
         "summary": "Get tickers by type",
         "operationId": "getTickers",
         "parameters": [
-          {"name": "inst_type", "in": "query", "required": false, "schema": {"type": "string", "default": "SPOT"}}
+          { "name": "inst_type", "in": "query", "required": false, "schema": { "type": "string", "default": "SPOT" } }
         ],
-        "responses": {"200": {"description": "OK"}}
+        "responses": { "200": { "description": "OK" } }
       }
     },
     "/candles": {
@@ -29,21 +29,45 @@
         "summary": "Get candles",
         "operationId": "getCandles",
         "parameters": [
-          {"name": "inst_id", "in": "query", "required": true, "schema": {"type": "string"}},
-          {"name": "bar", "in": "query", "required": true, "schema": {"type": "string", "enum": ["1D","4H","1H","15m","5m"]}},
-          {"name": "limit", "in": "query", "required": false, "schema": {"type": "integer"}}
+          { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "bar", "in": "query", "required": true, "schema": { "type": "string", "enum": ["1D","4H","1H","15m","5m"] } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer" } }
         ],
-        "responses": {"200": {"description": "OK"}}
+        "responses": { "200": { "description": "OK" } }
       }
     },
-    "/scan/start": {"post": {"summary": "Start scanning", "operationId": "scanStart", "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object","properties": {"symbols": {"type":"array","items":{"type":"string"}}, "bars": {"type":"object","additionalProperties":{"type":"integer"}}, "batch": {"type":"integer"}, "interval_sec": {"type":"integer"}}, "required": ["symbols","bars"]}}}}, "responses": {"200": {"description": "OK"}}}},
-    "/scan/stop": {"post": {"summary": "Stop scanning", "operationId": "scanStop", "responses": {"200": {"description": "OK"}}}},
-    "/scan/status": {"get": {"summary": "Scan status", "operationId": "scanStatus", "responses": {"200": {"description": "OK"}}}}
+    "/scan/start": {
+      "post": {
+        "summary": "Start scanning",
+        "operationId": "scanStart",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "symbols": { "type": "array", "items": { "type": "string" } },
+                  "bars": { "type": "object", "additionalProperties": { "type": "integer" } },
+                  "batch": { "type": "integer" },
+                  "interval_sec": { "type": "integer" }
+                },
+                "required": ["symbols","bars"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/scan/stop": { "post": { "summary": "Stop scanning", "operationId": "scanStop", "responses": { "200": { "description": "OK" } } } },
+    "/scan/status": { "get": { "summary": "Scan status", "operationId": "scanStatus", "responses": { "200": { "description": "OK" } } } }
   },
   "components": {
+    "schemas": {},                  // 👈 关键：补上空对象
     "securitySchemes": {
-      "apiKey": {"type": "apiKey", "in": "header", "name": "x-api-key"}
+      "apiKey": { "type": "apiKey", "in": "header", "name": "x-api-key" }
     }
   },
-  "security": [{"apiKey": []}]
+  "security": [ { "apiKey": [] } ]
 }
