@@ -48,3 +48,26 @@
                 "type": "object",
                 "properties": {
                   "symbols": { "type": "array", "items": { "type": "string" } },
+                  "bars": { "type": "object", "additionalProperties": { "type": "integer" } },
+                  "batch": { "type": "integer" },
+                  "interval_sec": { "type": "integer" }
+                },
+                "required": ["symbols","bars"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/scan/stop": { "post": { "summary": "Stop scanning", "operationId": "scanStop", "responses": { "200": { "description": "OK" } } } },
+    "/scan/status": { "get": { "summary": "Scan status", "operationId": "scanStatus", "responses": { "200": { "description": "OK" } } } }
+  },
+  "components": {
+    "schemas": {}, 
+    "securitySchemes": {
+      "apiKey": { "type": "apiKey", "in": "header", "name": "x-api-key" }
+    }
+  },
+  "security": [ { "apiKey": [] } ]
+}
