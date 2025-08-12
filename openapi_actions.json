@@ -1,6 +1,6 @@
 {
   "openapi": "3.1.0",
-  "info": { "title": "okx-fastapi", "version": "1.0.0" },
+  "info": { "title": "okx-fastapi", "version": "1.1.0" },
   "servers": [{ "url": "https://okx-fastapi.onrender.com" }],
   "paths": {
     "/health": { "get": { "summary": "Health check", "operationId": "health", "responses": { "200": { "description": "OK" } } } },
@@ -8,9 +8,7 @@
       "get": {
         "summary": "Get single ticker",
         "operationId": "getTicker",
-        "parameters": [
-          { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } }
-        ],
+        "parameters": [ { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } } ],
         "responses": { "200": { "description": "OK" } }
       }
     },
@@ -18,9 +16,7 @@
       "get": {
         "summary": "Get tickers by type",
         "operationId": "getTickers",
-        "parameters": [
-          { "name": "inst_type", "in": "query", "required": false, "schema": { "type": "string", "default": "SPOT" } }
-        ],
+        "parameters": [ { "name": "inst_type", "in": "query", "required": false, "schema": { "type": "string", "default": "SPOT" } } ],
         "responses": { "200": { "description": "OK" } }
       }
     },
@@ -42,32 +38,38 @@
         "operationId": "scanStart",
         "requestBody": {
           "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "symbols": { "type": "array", "items": { "type": "string" } },
-                  "bars": { "type": "object", "additionalProperties": { "type": "integer" } },
-                  "batch": { "type": "integer" },
-                  "interval_sec": { "type": "integer" }
-                },
-                "required": ["symbols","bars"]
-              }
-            }
-          }
+          "content": { "application/json": { "schema": {
+            "type": "object",
+            "properties": {
+              "symbols": { "type": "array", "items": { "type": "string" } },
+              "bars": { "type": "object", "additionalProperties": { "type": "integer" } },
+              "batch": { "type": "integer" },
+              "interval_sec": { "type": "integer" }
+            },
+            "required": ["symbols","bars"]
+          } } }
         },
         "responses": { "200": { "description": "OK" } }
       }
     },
     "/scan/stop": { "post": { "summary": "Stop scanning", "operationId": "scanStop", "responses": { "200": { "description": "OK" } } } },
-    "/scan/status": { "get": { "summary": "Scan status", "operationId": "scanStatus", "responses": { "200": { "description": "OK" } } } }
+    "/scan/status": { "get": { "summary": "Scan status", "operationId": "scanStatus", "responses": { "200": { "description": "OK" } } } },
+    "/prefs": {
+      "get": { "summary": "Get preferences (server memory)", "operationId": "getPrefs", "responses": { "200": { "description": "OK" } } },
+      "post": {
+        "summary": "Update preferences (server memory)",
+        "operationId": "setPrefs",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
   },
   "components": {
-    "schemas": {}, 
-    "securitySchemes": {
-      "apiKey": { "type": "apiKey", "in": "header", "name": "x-api-key" }
-    }
+    "schemas": {},
+    "securitySchemes": { "apiKey": { "type": "apiKey", "in": "header", "name": "x-api-key" } }
   },
   "security": [ { "apiKey": [] } ]
 }
