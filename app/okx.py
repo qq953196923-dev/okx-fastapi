@@ -3,10 +3,7 @@ from typing import Any, Dict
 from .config import OKX_BASE
 
 TIMEOUT = httpx.Timeout(10.0, connect=10.0)
-HEADERS = {
-    "Accept": "application/json",
-    "User-Agent": "okx-fastapi/1.1"
-}
+HEADERS = {"Accept": "application/json", "User-Agent": "okx-fastapi/1.1"}
 
 class OkxClient:
     def __init__(self):
@@ -17,17 +14,10 @@ class OkxClient:
         try:
             r = await self._client.get(url, params=params)
             if r.status_code != 200:
-                # 不抛异常，返回可读 JSON，避免 FastAPI 返回非 JSON/500
-                return {
-                    "code": str(r.status_code),
-                    "error": "upstream_http_error",
-                    "url": str(r.url),
-                    "detail": r.text[:500]
-                }
-            # OKX 返回就是 JSON
+                return {"code": str(r.status_code), "error": "upstream_http_error",
+                        "url": str(r.url), "detail": r.text[:500]}
             return r.json()
         except httpx.RequestError as e:
-            # 网络层错误也包装为 JSON
             return {"code": "-1", "error": "network_error", "detail": str(e)}
 
     async def ticker(self, inst_id: str) -> Dict[str, Any]:
