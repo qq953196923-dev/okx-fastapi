@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: okx-fastapi
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: API_KEY
+        sync: false   # 在 Render 控制台手动填写你的密钥值
