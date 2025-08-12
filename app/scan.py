@@ -10,7 +10,7 @@ from .storage import save_candles_csv
 
 class Scanner:
     def __init__(self):
-        self.scheduler = AsyncIOScheduler()
+        self.scheduler = AsyncIOScheduler(timezone="UTC")
         self.running = False
         self.symbols = deque(SCAN_SYMBOLS)
         self.bars: Dict[str, int] = dict(SCAN_BARS)
