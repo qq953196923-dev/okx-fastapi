@@ -8,25 +8,49 @@ from .okx import OkxClient
 from .scan import scanner
 from .dashboard import dashboard_page
 
-app = FastAPI(title="okx-fastapi", version="1.1.2")
+app = FastAPI(title="okx-fastapi", version="1.1.3")
 
-# 统一把未捕获异常转成 JSON，避免 Actions 出现 ContentTypeError
+# ---- 全局异常：一律转为 JSON，避免 Actions 出现 ContentTypeError ----
 @app.exception_handler(Exception)
 async def _any_exc(_req: Request, exc: Exception):
-    return JSONResponse(
-        {"code": "-2", "error": "server_exception", "detail": str(exc)},
-        status_code=200
-    )
+    return JSONResponse({"code": "-2", "error": "server_exception", "detail": str(exc)}, status_code=200)
 
-# 简单 Header 鉴权：放行 /health 与 /dashboard，其它都需要 x-api-key
+# ---- 统一取 key：Header(x-api-key) / Authorization: Bearer / Query(api_key|x-api-key) ----
+def _extract_api_key(req: Request) -> Optional[str]:
+    k = req.headers.get("x-api-key") or req.headers.get("X-Api-Key")
+    if not k:
+        auth = req.headers.get("authorization") or req.headers.get("Authorization")
+        if auth and auth.lower().startswith("bearer "):
+            k = auth.split(None, 1)[1].strip()
+    if not k:
+        qp = req.query_params
+        k = qp.get("api_key") or qp.get("x-api-key")
+    return k
+
+# ---- 简单鉴权中间件（放行 /health 与 /dashboard 与 /debug/echo）----
 @app.middleware("http")
 async def check_api_key(request: Request, call_next):
-    if request.url.path in ("/health", "/dashboard"):
+    open_paths = ("/health", "/dashboard", "/debug/echo")
+    if request.url.path in open_paths:
         return await call_next(request)
-    key = request.headers.get("x-api-key")
+    key = _extract_api_key(request)
     if key != API_KEY:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
     return await call_next(request)
+
+# ---- 调试：查看是否带上了密钥（只展示是否存在与尾四位，避免泄露）----
+@app.get("/debug/echo")
+async def debug_echo(request: Request):
+    k = _extract_api_key(request)
+    masked = None if not k else ("***" + k[-4:])
+    return {
+        "has_key": bool(k),
+        "key_tail": masked,
+        "headers_seen": {
+            "authorization_present": bool(request.headers.get("authorization")),
+            "x-api-key_present": bool(request.headers.get("x-api-key"))
+        }
+    }
 
 # ---- 基础 ----
 @app.get("/health")
@@ -57,7 +81,7 @@ async def get_tickers(inst_type: str = Query("SPOT", alias="inst_type")):
 @app.get("/candles")
 async def get_candles(inst_id: str, bar: str, limit: Optional[int] = None):
     if limit is None:
-        limit = DEFAULT_BARS.get(bar, 100)  # 1D/4H/1H=50，15m/5m=150
+        limit = DEFAULT_BARS.get(bar, 100)  # 1D/4H/1H=50; 15m/5m=150
     client = OkxClient()
     try:
         return await client.candles(inst_id, bar, int(limit))
