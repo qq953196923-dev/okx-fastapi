@@ -1,14 +1,24 @@
 {
   "openapi": "3.1.0",
-  "info": { "title": "okx-fastapi", "version": "1.1.0" },
+  "info": { "title": "okx-fastapi", "version": "1.1.1" },
   "servers": [{ "url": "https://okx-fastapi.onrender.com" }],
   "paths": {
-    "/health": { "get": { "summary": "Health check", "operationId": "health", "responses": { "200": { "description": "OK" } } } },
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "operationId": "health",
+        "security": [{ "apiKey": [] }],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
     "/ticker": {
       "get": {
         "summary": "Get single ticker",
         "operationId": "getTicker",
-        "parameters": [ { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } } ],
+        "security": [{ "apiKey": [] }],
+        "parameters": [
+          { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
         "responses": { "200": { "description": "OK" } }
       }
     },
@@ -16,7 +26,10 @@
       "get": {
         "summary": "Get tickers by type",
         "operationId": "getTickers",
-        "parameters": [ { "name": "inst_type", "in": "query", "required": false, "schema": { "type": "string", "default": "SPOT" } } ],
+        "security": [{ "apiKey": [] }],
+        "parameters": [
+          { "name": "inst_type", "in": "query", "required": false, "schema": { "type": "string", "default": "SPOT" } }
+        ],
         "responses": { "200": { "description": "OK" } }
       }
     },
@@ -24,6 +37,7 @@
       "get": {
         "summary": "Get candles",
         "operationId": "getCandles",
+        "security": [{ "apiKey": [] }],
         "parameters": [
           { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } },
           { "name": "bar", "in": "query", "required": true, "schema": { "type": "string", "enum": ["1D","4H","1H","15m","5m"] } },
@@ -36,31 +50,44 @@
       "post": {
         "summary": "Start scanning",
         "operationId": "scanStart",
+        "security": [{ "apiKey": [] }],
         "requestBody": {
           "required": true,
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/ScanStartBody" } }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScanStartBody" } } }
         },
         "responses": { "200": { "description": "OK" } }
       }
     },
-    "/scan/stop": { "post": { "summary": "Stop scanning", "operationId": "scanStop", "responses": { "200": { "description": "OK" } } } },
-    "/scan/status": { "get": { "summary": "Scan status", "operationId": "scanStatus", "responses": { "200": { "description": "OK" } } } },
+    "/scan/stop": {
+      "post": {
+        "summary": "Stop scanning",
+        "operationId": "scanStop",
+        "security": [{ "apiKey": [] }],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/scan/status": {
+      "get": {
+        "summary": "Scan status",
+        "operationId": "scanStatus",
+        "security": [{ "apiKey": [] }],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
     "/prefs": {
       "get": {
         "summary": "Get preferences (server memory)",
         "operationId": "getPrefs",
+        "security": [{ "apiKey": [] }],
         "responses": { "200": { "description": "OK" } }
       },
       "post": {
         "summary": "Update preferences (server memory)",
         "operationId": "setPrefs",
+        "security": [{ "apiKey": [] }],
         "requestBody": {
           "required": true,
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/PrefsPatch" } }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PrefsPatch" } } }
         },
         "responses": { "200": { "description": "OK" } }
       }
@@ -76,7 +103,7 @@
           "batch": { "type": "integer" },
           "interval_sec": { "type": "integer" }
         },
-        "required": ["symbols","bars"]
+        "required": ["symbols", "bars"]
       },
       "PrefsPatch": {
         "type": "object",
@@ -94,5 +121,5 @@
       "apiKey": { "type": "apiKey", "in": "header", "name": "x-api-key" }
     }
   },
-  "security": [ { "apiKey": [] } ]
+  "security": [{ "apiKey": [] }]
 }
