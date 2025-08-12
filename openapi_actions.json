@@ -38,16 +38,9 @@
         "operationId": "scanStart",
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": {
-            "type": "object",
-            "properties": {
-              "symbols": { "type": "array", "items": { "type": "string" } },
-              "bars": { "type": "object", "additionalProperties": { "type": "integer" } },
-              "batch": { "type": "integer" },
-              "interval_sec": { "type": "integer" }
-            },
-            "required": ["symbols","bars"]
-          } } }
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ScanStartBody" } }
+          }
         },
         "responses": { "200": { "description": "OK" } }
       }
@@ -55,21 +48,51 @@
     "/scan/stop": { "post": { "summary": "Stop scanning", "operationId": "scanStop", "responses": { "200": { "description": "OK" } } } },
     "/scan/status": { "get": { "summary": "Scan status", "operationId": "scanStatus", "responses": { "200": { "description": "OK" } } } },
     "/prefs": {
-      "get": { "summary": "Get preferences (server memory)", "operationId": "getPrefs", "responses": { "200": { "description": "OK" } } },
+      "get": {
+        "summary": "Get preferences (server memory)",
+        "operationId": "getPrefs",
+        "responses": { "200": { "description": "OK" } }
+      },
       "post": {
         "summary": "Update preferences (server memory)",
         "operationId": "setPrefs",
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/PrefsPatch" } }
+          }
         },
         "responses": { "200": { "description": "OK" } }
       }
     }
   },
   "components": {
-    "schemas": {},
-    "securitySchemes": { "apiKey": { "type": "apiKey", "in": "header", "name": "x-api-key" } }
+    "schemas": {
+      "ScanStartBody": {
+        "type": "object",
+        "properties": {
+          "symbols": { "type": "array", "items": { "type": "string" } },
+          "bars": { "type": "object", "additionalProperties": { "type": "integer" } },
+          "batch": { "type": "integer" },
+          "interval_sec": { "type": "integer" }
+        },
+        "required": ["symbols","bars"]
+      },
+      "PrefsPatch": {
+        "type": "object",
+        "properties": {
+          "exclude_symbols": { "type": "array", "items": { "type": "string" } },
+          "risk_max_percent": { "type": "integer" },
+          "bars": { "type": "object", "additionalProperties": { "type": "integer" } },
+          "batch": { "type": "integer" },
+          "interval_sec": { "type": "integer" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "apiKey": { "type": "apiKey", "in": "header", "name": "x-api-key" }
+    }
   },
   "security": [ { "apiKey": [] } ]
 }
