@@ -1,24 +1,17 @@
 {
   "openapi": "3.1.0",
-  "info": { "title": "okx-fastapi", "version": "1.1.3" },
+  "info": { "title": "okx-fastapi", "version": "1.4.0" },
   "servers": [{ "url": "https://okx-fastapi.onrender.com" }],
   "paths": {
-    "/health": {
-      "get": {
-        "summary": "Health check",
-        "operationId": "health",
-        "responses": { "200": { "description": "OK" } }
-      }
-    },
+    "/health": { "get": { "summary": "Health check", "operationId": "health", "responses": {"200": {"description": "OK"}}}},
     "/ticker": {
       "get": {
         "summary": "Get single ticker",
         "operationId": "getTicker",
         "parameters": [
-          { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } },
-          { "name": "api_key", "in": "query", "required": false, "schema": { "type": "string" }, "description": "兼容：若 Header 未注入，可在此填 API Key" }
+          {"name": "inst_id", "in": "query", "required": true, "schema": {"type": "string"}}
         ],
-        "responses": { "200": { "description": "OK" } }
+        "responses": {"200": {"description": "OK"}}
       }
     },
     "/tickers": {
@@ -26,10 +19,9 @@
         "summary": "Get tickers by type",
         "operationId": "getTickers",
         "parameters": [
-          { "name": "inst_type", "in": "query", "required": false, "schema": { "type": "string", "default": "SPOT" } },
-          { "name": "api_key", "in": "query", "required": false, "schema": { "type": "string" } }
+          {"name": "inst_type", "in": "query", "required": false, "schema": {"type": "string", "default": "SPOT"}}
         ],
-        "responses": { "200": { "description": "OK" } }
+        "responses": {"200": {"description": "OK"}}
       }
     },
     "/candles": {
@@ -37,93 +29,60 @@
         "summary": "Get candles",
         "operationId": "getCandles",
         "parameters": [
-          { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } },
-          { "name": "bar", "in": "query", "required": true, "schema": { "type": "string", "enum": ["1D","4H","1H","15m","5m"] } },
-          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer" } },
-          { "name": "api_key", "in": "query", "required": false, "schema": { "type": "string" } }
+          {"name": "inst_id", "in": "query", "required": true, "schema": {"type": "string"}},
+          {"name": "bar", "in": "query", "required": true, "schema": {"type": "string", "enum": ["1D","4H","1H","15m","5m"]}},
+          {"name": "limit", "in": "query", "required": false, "schema": {"type": "integer"}}
         ],
-        "responses": { "200": { "description": "OK" } }
+        "responses": {"200": {"description": "OK"}}
       }
     },
-    "/scan/start": {
-      "post": {
-        "summary": "Start scanning",
-        "operationId": "scanStart",
-        "parameters": [
-          { "name": "api_key", "in": "query", "required": false, "schema": { "type": "string" } }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScanStartBody" } } }
-        },
-        "responses": { "200": { "description": "OK" } }
-      }
-    },
-    "/scan/stop": {
-      "post": {
-        "summary": "Stop scanning",
-        "operationId": "scanStop",
-        "parameters": [
-          { "name": "api_key", "in": "query", "required": false, "schema": { "type": "string" } }
-        ],
-        "responses": { "200": { "description": "OK" } }
-      }
-    },
-    "/scan/status": {
+    "/scan/start": {"post": {"summary": "Start scanning", "operationId": "scanStart", "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object","properties": {"symbols": {"type":"array","items":{"type":"string"}}, "bars": {"type":"object","additionalProperties":{"type":"integer"}}, "batch": {"type":"integer"}, "interval_sec": {"type":"integer"}}, "required": ["symbols","bars"]}}}}, "responses": {"200": {"description": "OK"}}}},
+    "/scan/stop": {"post": {"summary": "Stop scanning", "operationId": "scanStop", "responses": {"200": {"description": "OK"}}}},
+    "/scan/status": {"get": {"summary": "Scan status", "operationId": "scanStatus", "responses": {"200": {"description": "OK"}}}},
+
+    "/strategy/panda/evaluate": {
       "get": {
-        "summary": "Scan status",
-        "operationId": "scanStatus",
+        "summary": "Evaluate a single symbol with Panda strategy",
+        "operationId": "strategyEvaluatePanda",
         "parameters": [
-          { "name": "api_key", "in": "query", "required": false, "schema": { "type": "string" } }
+          {"name": "inst_id", "in": "query", "required": true, "schema": {"type": "string"}},
+          {"name": "bar", "in": "query", "required": false, "schema": {"type": "string", "default": "15m"}},
+          {"name": "trend_bar", "in": "query", "required": false, "schema": {"type": "string", "default": "1H"}},
+          {"name": "limit", "in": "query", "required": false, "schema": {"type": "integer", "default": 150}},
+          {"name": "risk_percent", "in": "query", "required": false, "schema": {"type": "number", "default": 2.0}},
+          {"name": "funds_total", "in": "query", "required": false, "schema": {"type": "number", "default": 694.0}},
+          {"name": "funds_split", "in": "query", "required": false, "schema": {"type": "integer", "default": 7}},
+          {"name": "leverage", "in": "query", "required": false, "schema": {"type": "number", "default": 5.0}},
+          {"name": "exclude_btc_in_screen", "in": "query", "required": false, "schema": {"type": "boolean", "default": true}}
         ],
-        "responses": { "200": { "description": "OK" } }
+        "responses": {"200": {"description": "OK"}}
       }
     },
-    "/files/list": {
+
+    "/strategy/panda/scan": {
       "get": {
-        "summary": "List generated files",
-        "operationId": "filesList",
+        "summary": "Scan top movers and evaluate with Panda strategy",
+        "operationId": "strategyScanPanda",
         "parameters": [
-          { "name": "api_key", "in": "query", "required": false, "schema": { "type": "string" } }
+          { "name": "inst_type", "in": "query", "required": false, "schema": { "type": "string", "default": "SPOT", "enum": ["SPOT","FUTURES","SWAP","MARGIN"] } },
+          { "name": "top", "in": "query", "required": false, "schema": { "type": "integer", "default": 5 } },
+          { "name": "bar", "in": "query", "required": false, "schema": { "type": "string", "default": "15m" } },
+          { "name": "trend_bar", "in": "query", "required": false, "schema": { "type": "string", "default": "1H" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 150 } },
+          { "name": "risk_percent", "in": "query", "required": false, "schema": { "type": "number", "default": 2.0 } },
+          { "name": "funds_total", "in": "query", "required": false, "schema": { "type": "number", "default": 694.0 } },
+          { "name": "funds_split", "in": "query", "required": false, "schema": { "type": "integer", "default": 7 } },
+          { "name": "leverage", "in": "query", "required": false, "schema": { "type": "number", "default": 5.0 } },
+          { "name": "exclude_btc_in_screen", "in": "query", "required": false, "schema": { "type": "boolean", "default": true } }
         ],
-        "responses": { "200": { "description": "OK" } }
-      }
-    },
-    "/files/download": {
-      "get": {
-        "summary": "Download a file",
-        "operationId": "filesDownload",
-        "parameters": [
-          { "name": "path", "in": "query", "required": true, "schema": { "type": "string" } },
-          { "name": "api_key", "in": "query", "required": false, "schema": { "type": "string" } }
-        ],
-        "responses": { "200": { "description": "OK" } }
-      }
-    },
-    "/debug/echo": {
-      "get": {
-        "summary": "Echo headers (debug only, no auth required)",
-        "operationId": "debugEcho",
         "responses": { "200": { "description": "OK" } }
       }
     }
   },
   "components": {
-    "schemas": {
-      "ScanStartBody": {
-        "type": "object",
-        "properties": {
-          "symbols": { "type": "array", "items": { "type": "string" } },
-          "bars": { "type": "object", "additionalProperties": { "type": "integer" } },
-          "batch": { "type": "integer" },
-          "interval_sec": { "type": "integer" }
-        },
-        "required": ["symbols", "bars"]
-      }
-    },
     "securitySchemes": {
-      "apiKey": { "type": "apiKey", "in": "header", "name": "x-api-key" }
+      "apiKey": {"type": "apiKey", "in": "header", "name": "x-api-key"}
     }
   },
-  "security": [{ "apiKey": [] }]
+  "security": [{"apiKey": []}]
 }
