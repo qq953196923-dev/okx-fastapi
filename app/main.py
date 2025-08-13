@@ -8,7 +8,14 @@ from .okx import OkxClient
 from .scan import scanner
 from .dashboard import dashboard_page
 
-app = FastAPI(title="okx-fastapi", version="1.1.3")
+# === Panda Strategy 依赖（新增） ===
+from .strategy_panda import (
+    scan_top as scan_top_panda,
+    evaluate_panda,
+    fetch_candles as fetch_candles_panda,
+)
+
+app = FastAPI(title="okx-fastapi", version="1.4.0")
 
 # ---- 全局异常：一律转为 JSON，避免 Actions 出现 ContentTypeError ----
 @app.exception_handler(Exception)
@@ -119,3 +126,57 @@ async def files_download(path: str):
     if not os.path.isfile(path):
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(path, filename=os.path.basename(path))
+
+# ==== 熊猫交易系统：单标评估（新增） ====
+@app.get("/strategy/panda/evaluate")
+async def strategy_panda_evaluate(
+    inst_id: str = Query(...),
+    bar: str = Query("15m"),
+    trend_bar: str = Query("1H"),
+    limit: int = Query(150),
+    risk_percent: float = Query(2.0),
+    funds_total: float = Query(694.0),
+    funds_split: int = Query(7),
+    leverage: float = Query(5.0),
+    exclude_btc_in_screen: bool = Query(True),
+):
+    raw_b = await fetch_candles_panda(inst_id, bar, limit)
+    raw_t = await fetch_candles_panda(inst_id, trend_bar, limit)
+    return evaluate_panda(
+        inst_id,
+        bar,
+        raw_b,
+        raw_t,
+        risk_percent,
+        funds_total,
+        funds_split,
+        leverage,
+        exclude_btc_in_screen,
+    )
+
+# ==== 熊猫交易系统：批量扫描（新增） ====
+@app.get("/strategy/panda/scan")
+async def strategy_panda_scan(
+    inst_type: str = Query("SPOT"),
+    top: int = Query(5),
+    bar: str = Query("15m"),
+    trend_bar: str = Query("1H"),
+    limit: int = Query(150),
+    risk_percent: float = Query(2.0),
+    funds_total: float = Query(694.0),
+    funds_split: int = Query(7),
+    leverage: float = Query(5.0),
+    exclude_btc_in_screen: bool = Query(True),
+):
+    return await scan_top_panda(
+        inst_type,
+        top,
+        bar,
+        trend_bar,
+        limit,
+        exclude_btc_in_screen,
+        funds_total,
+        funds_split,
+        leverage,
+        risk_percent,
+    )
