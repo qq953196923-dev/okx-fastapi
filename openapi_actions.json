@@ -1,12 +1,7 @@
 {
   "openapi": "3.1.0",
-  "info": {
-    "title": "okx-fastapi (legacy + new intraday system)",
-    "version": "1.5.0"
-  },
-  "servers": [
-    { "url": "https://okx-fastapi.onrender.com" }
-  ],
+  "info": { "title": "okx-fastapi", "version": "1.4.0" },
+  "servers": [{ "url": "https://okx-fastapi.onrender.com" }],
   "paths": {
     "/health": {
       "get": {
@@ -15,34 +10,37 @@
         "responses": { "200": { "description": "OK" } }
       }
     },
+
     "/ticker": {
       "get": {
-        "summary": "Get single ticker (proxy OKX)",
+        "summary": "Get single ticker",
         "operationId": "getTicker",
         "parameters": [
-          { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Instrument ID, e.g. ETH-USDT" }
+          { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } }
         ],
         "responses": { "200": { "description": "OK" } }
       }
     },
+
     "/tickers": {
       "get": {
-        "summary": "Get tickers by market type (proxy OKX)",
+        "summary": "Get tickers by type",
         "operationId": "getTickers",
         "parameters": [
-          { "name": "inst_type", "in": "query", "required": false, "schema": { "type": "string", "default": "SPOT", "enum": ["SPOT","FUTURES","SWAP","MARGIN"] } }
+          { "name": "inst_type", "in": "query", "required": false, "schema": { "type": "string", "default": "SPOT", "enum": ["SPOT","FUTURES","SWAP","MARGIN","OPTION"] } }
         ],
         "responses": { "200": { "description": "OK" } }
       }
     },
+
     "/candles": {
       "get": {
-        "summary": "Get candles (proxy OKX)",
+        "summary": "Get candles",
         "operationId": "getCandles",
         "parameters": [
           { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } },
           { "name": "bar", "in": "query", "required": true, "schema": { "type": "string", "enum": ["1D","4H","1H","15m","5m"] } },
-          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer" }, "description": "Default: 1D/4H/1H=50, 15m/5m=150" }
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer" } }
         ],
         "responses": { "200": { "description": "OK" } }
       }
@@ -50,7 +48,7 @@
 
     "/scan/start": {
       "post": {
-        "summary": "Start background scanner (legacy batch scanner)",
+        "summary": "Start scanning",
         "operationId": "scanStart",
         "requestBody": {
           "required": true,
@@ -61,10 +59,10 @@
                 "properties": {
                   "symbols": { "type": "array", "items": { "type": "string" } },
                   "bars": { "type": "object", "additionalProperties": { "type": "integer" } },
-                  "batch": { "type": "integer", "default": 5 },
-                  "interval_sec": { "type": "integer", "default": 30 }
+                  "batch": { "type": "integer" },
+                  "interval_sec": { "type": "integer" }
                 },
-                "required": ["symbols", "bars"]
+                "required": ["symbols","bars"]
               }
             }
           }
@@ -72,48 +70,89 @@
         "responses": { "200": { "description": "OK" } }
       }
     },
+
     "/scan/stop": {
       "post": {
-        "summary": "Stop background scanner (legacy)",
+        "summary": "Stop scanning",
         "operationId": "scanStop",
         "responses": { "200": { "description": "OK" } }
       }
     },
+
     "/scan/status": {
       "get": {
-        "summary": "Get background scanner status (legacy)",
+        "summary": "Scan status",
         "operationId": "scanStatus",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+
+    "/strategy/panda/evaluate": {
+      "get": {
+        "summary": "Evaluate a single symbol with Panda system (legacy)",
+        "operationId": "strategyPandaEvaluate",
+        "parameters": [
+          { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "bar", "in": "query", "required": false, "schema": { "type": "string", "default": "15m" } },
+          { "name": "trend_bar", "in": "query", "required": false, "schema": { "type": "string", "default": "1H" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 150 } },
+          { "name": "risk_percent", "in": "query", "required": false, "schema": { "type": "number", "default": 2.0 } },
+          { "name": "funds_total", "in": "query", "required": false, "schema": { "type": "number", "default": 694.0 } },
+          { "name": "funds_split", "in": "query", "required": false, "schema": { "type": "integer", "default": 7 } },
+          { "name": "leverage", "in": "query", "required": false, "schema": { "type": "number", "default": 5.0 } },
+          { "name": "exclude_btc_in_screen", "in": "query", "required": false, "schema": { "type": "boolean", "default": true } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+
+    "/strategy/panda/scan": {
+      "get": {
+        "summary": "Batch scan top gainers with Panda system (legacy)",
+        "operationId": "strategyPandaScan",
+        "parameters": [
+          { "name": "inst_type", "in": "query", "required": false, "schema": { "type": "string", "default": "SPOT", "enum": ["SPOT","FUTURES","SWAP","MARGIN"] } },
+          { "name": "top", "in": "query", "required": false, "schema": { "type": "integer", "default": 5 } },
+          { "name": "bar", "in": "query", "required": false, "schema": { "type": "string", "default": "15m" } },
+          { "name": "trend_bar", "in": "query", "required": false, "schema": { "type": "string", "default": "1H" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 150 } },
+          { "name": "risk_percent", "in": "query", "required": false, "schema": { "type": "number", "default": 2.0 } },
+          { "name": "funds_total", "in": "query", "required": false, "schema": { "type": "number", "default": 694.0 } },
+          { "name": "funds_split", "in": "query", "required": false, "schema": { "type": "integer", "default": 7 } },
+          { "name": "leverage", "in": "query", "required": false, "schema": { "type": "number", "default": 5.0 } },
+          { "name": "exclude_btc_in_screen", "in": "query", "required": false, "schema": { "type": "boolean", "default": true } }
+        ],
         "responses": { "200": { "description": "OK" } }
       }
     },
 
     "/strategy/custom/evaluate": {
       "get": {
-        "summary": "Evaluate ONE instrument with NEW intraday system (EMA21/55/144 + ATR)",
+        "summary": "Evaluate a single symbol with NEW intraday system",
         "operationId": "strategyCustomEvaluate",
         "parameters": [
-          { "name": "inst_id", "in": "query", "required": true,  "schema": { "type": "string" }, "description": "e.g. ETH-USDT" },
-          { "name": "bar", "in": "query", "required": false, "schema": { "type": "string", "default": "15m", "enum": ["5m","15m","1H","4H","1D"] }, "description": "Base timeframe" },
-          { "name": "trend_bar", "in": "query", "required": false, "schema": { "type": "string", "default": "1H", "enum": ["1H","4H","1D"] }, "description": "Trend filter timeframe" },
-          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 150 }, "description": "Candle count" },
+          { "name": "inst_id", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "bar", "in": "query", "required": false, "schema": { "type": "string", "default": "15m" } },
+          { "name": "trend_bar", "in": "query", "required": false, "schema": { "type": "string", "default": "1H" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 150 } },
           { "name": "risk_percent", "in": "query", "required": false, "schema": { "type": "number", "default": 2.0 } },
           { "name": "funds_total", "in": "query", "required": false, "schema": { "type": "number", "default": 694.0 } },
           { "name": "funds_split", "in": "query", "required": false, "schema": { "type": "integer", "default": 7 } },
-          { "name": "leverage", "in": "query", "required": false, "schema": { "type": "number", "default": 5.0 } },
-          { "name": "exclude_btc_in_screen", "in": "query", "required": false, "schema": { "type": "boolean", "default": true }, "description": "Keep true in most cases" }
+          { "name": "leverage", "in": "query", "required": false, "schema": { "type": "number", "default": 5.0 } }
         ],
         "responses": { "200": { "description": "OK" } }
       }
     },
+
     "/strategy/custom/scan": {
       "get": {
-        "summary": "Scan TOP-N movers then evaluate with NEW intraday system",
+        "summary": "Batch scan top gainers with NEW intraday system",
         "operationId": "strategyCustomScan",
         "parameters": [
           { "name": "inst_type", "in": "query", "required": false, "schema": { "type": "string", "default": "SPOT", "enum": ["SPOT","FUTURES","SWAP","MARGIN"] } },
-          { "name": "top", "in": "query", "required": false, "schema": { "type": "integer", "default": 5 }, "description": "Top-N by 24h % change (excluding BTC when enabled)" },
-          { "name": "bar", "in": "query", "required": false, "schema": { "type": "string", "default": "15m", "enum": ["5m","15m","1H","4H","1D"] } },
-          { "name": "trend_bar", "in": "query", "required": false, "schema": { "type": "string", "default": "1H", "enum": ["1H","4H","1D"] } },
+          { "name": "top", "in": "query", "required": false, "schema": { "type": "integer", "default": 5 } },
+          { "name": "bar", "in": "query", "required": false, "schema": { "type": "string", "default": "15m" } },
+          { "name": "trend_bar", "in": "query", "required": false, "schema": { "type": "string", "default": "1H" } },
           { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 150 } },
           { "name": "risk_percent", "in": "query", "required": false, "schema": { "type": "number", "default": 2.0 } },
           { "name": "funds_total", "in": "query", "required": false, "schema": { "type": "number", "default": 694.0 } },
@@ -125,12 +164,12 @@
       }
     }
   },
+
   "components": {
+    "schemas": {},
     "securitySchemes": {
       "apiKey": { "type": "apiKey", "in": "header", "name": "x-api-key" }
     }
   },
-  "security": [
-    { "apiKey": [] }
-  ]
+  "security": [{ "apiKey": [] }]
 }
